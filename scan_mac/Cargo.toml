@@ -1,0 +1,12 @@
+[package]
+name = "scan_mac"
+version = "0.1.0"
+authors = [ "mahkoh" ]
+
+[lib]
+name = "scan_mac"
+path = "src/lib.rs"
+plugin = true
+
+[dependencies.scan]
+git = "https://github.com/mahkoh/scan.git"

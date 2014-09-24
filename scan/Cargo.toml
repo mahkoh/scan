@@ -1,0 +1,8 @@
+[package]
+name = "scan"
+version = "0.1.0"
+authors = [ "mahkoh" ]
+
+[lib]
+name = "scan"
+path = "src/lib.rs"
