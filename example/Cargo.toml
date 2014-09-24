@@ -1,0 +1,13 @@
+[package]
+name = "example"
+version = "0.1.0"
+authors = [ "mahkoh" ]
+
+[[bin]]
+name = "example"
+
+[dependencies.scan]
+git = "https://github.com/mahkoh/scan"
+
+[dependencies.scan_mac]
+git = "https://github.com/mahkoh/scan"
