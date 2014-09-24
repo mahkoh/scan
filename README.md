@@ -57,10 +57,10 @@ There are six kinds of specifiers:
 - Whitespace
 
 The first four are written like this: `{i32}`. Whitespace is either a space or
-a tab. Literals are all all characters other characters. Note that the `{`
-literal has to be escaped as `{{` and the `}` literal has to be escaped as `}}`.
+a tab. All other characters are literals. Note that the `{` literal has to be
+escaped as `{{` and the `}` literal has to be escaped as `}}`.
 
-Specifier | Type          | Return value
+Specifier | Parses        | Return type
 --------- | ------------- | ------------
 `{i8}`  | Signed   integer | `Option<i8>`
 `{u8}`  | Unsigned integer | `Option<u8>`
