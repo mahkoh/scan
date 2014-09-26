@@ -35,7 +35,7 @@ impl UTF8 {
                 n => {
                     self.rem = n as u32;
                     self.cur = b as u32 & (0xFF >> (n + 1));
-                    (old, Some(REPLACEMENT))
+                    (old, None)
                 },
             }
         } else {
