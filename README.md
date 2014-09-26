@@ -50,7 +50,7 @@ in a tuple. `scan!` can be used multiple times on the same input line.
 `scanln!` is like `scan!` but always consumes a whole line. Depending on the argument,
 `scan!` and `scanln!` fit one of the following function signatures:
 ```rust
-fn scanln!(spec: &str) -> ()
+fn scanln!(spec: &str)
 fn scanln!(spec: &str) -> Option<T>
 fn scanln!(spec: &str) -> (Option<T1>, Option<T2>)
 fn scanln!(spec: &str) -> (Option<T1>, Option<T2>, Option<T3>)
