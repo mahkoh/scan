@@ -33,7 +33,7 @@ impl UTF8 {
             match std::str::utf8_char_width(b) {
                 0 => (old, Some(REPLACEMENT)),
                 n => {
-                    self.rem = n as u32;
+                    self.rem = n as u32 - 1;
                     self.cur = b as u32 & (0xFF >> (n + 1));
                     (old, None)
                 },
