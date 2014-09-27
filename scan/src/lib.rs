@@ -232,16 +232,16 @@ impl Scanner {
             }
             match utf8.push(next) {
                 (Some(c1), Some(c2)) => {
-                    res.push_char(c1);
-                    res.push_char(c2);
+                    res.push(c1);
+                    res.push(c2);
                 },
-                (Some(c1), None) => res.push_char(c1),
-                (None, Some(c2)) => res.push_char(c2),
+                (Some(c1), None) => res.push(c1),
+                (None, Some(c2)) => res.push(c2),
                 _ => { },
             }
         }
         if utf8.pending() {
-            res.push_char(utf8::REPLACEMENT);
+            res.push(utf8::REPLACEMENT);
         }
         res
     }
