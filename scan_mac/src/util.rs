@@ -1,12 +1,14 @@
-use std::collections::{RingBuf, Deque};
+use std::collections::{RingBuf};
+
+pub use self::Token::*;
 
 pub struct PeekN<U, T> {
     intern: T,
-    counter: uint,
+    counter: usize,
     peeked: RingBuf<U>,
 }
 
-impl<U: Copy, T: Iterator<U>> PeekN<U, T> {
+impl<U: Copy, T: Iterator<Item = U>> PeekN<U, T> {
     pub fn new(intern: T) -> PeekN<U, T> {
         PeekN {
             intern: intern,
@@ -15,12 +17,12 @@ impl<U: Copy, T: Iterator<U>> PeekN<U, T> {
         }
     }
 
-    pub fn peek(&mut self, n: uint) -> Option<U> {
+    pub fn peek(&mut self, n: usize) -> Option<U> {
         if n >= self.peeked.len() {
             let m = n - self.peeked.len() + 1;
             for _ in range(0, m) {
                 match self.intern.next() {
-                    Some(s) => self.peeked.push(s),
+                    Some(s) => self.peeked.push_back(s),
                     _ => return None,
                 }
             }
@@ -29,8 +31,10 @@ impl<U: Copy, T: Iterator<U>> PeekN<U, T> {
     }
 }
 
-impl<U, T: Iterator<U>> Iterator<(uint, U)> for PeekN<U, T> {
-    fn next(&mut self) -> Option<(uint, U)> {
+impl<U, T: Iterator<Item=U>> Iterator for PeekN<U, T> {
+    type Item = (usize, U);
+
+    fn next(&mut self) -> Option<(usize, U)> {
         let res = match self.peeked.pop_front() {
             x @ Some(_) => x,
             _ => self.intern.next(),
@@ -45,24 +49,24 @@ impl<U, T: Iterator<U>> Iterator<(uint, U)> for PeekN<U, T> {
     }
 }
 
-#[deriving(PartialEq)]
+#[derive(PartialEq, Copy)]
 pub enum Token {
     LeftBrace,
     LeftBraceBrace,
     RightBrace,
     RightBraceBrace,
-    Literal(uint),
+    Literal(usize),
     Colon,
     Space,
 }
 
 pub struct Stream {
-    tokens: Vec<(uint, Token)>,
-    pos: uint,
+    tokens: Vec<(usize, Token)>,
+    pos: usize,
 }
 
 impl Stream {
-    pub fn new(v: Vec<(uint, Token)>) -> Stream {
+    pub fn new(v: Vec<(usize, Token)>) -> Stream {
         Stream {
             tokens: v,
             pos: 0,
@@ -88,8 +92,10 @@ impl Stream {
     }
 }
 
-impl Iterator<(uint, Token)> for Stream {
-    fn next(&mut self) -> Option<(uint, Token)> {
+impl Iterator for Stream {
+    type Item = (usize, Token);
+
+    fn next(&mut self) -> Option<(usize, Token)> {
         if self.pos < self.tokens.len() {
             self.pos += 1;
             Some(self.tokens[self.pos-1])

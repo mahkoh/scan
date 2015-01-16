@@ -1,10 +1,13 @@
 #![crate_name="scan_mac"]
 #![crate_type="dylib"]
-#![feature(managed_boxes, phase, plugin_registrar, quote, macro_rules)]
+#![feature(plugin_registrar, quote)]
+#![allow(unstable)]
 
 extern crate syntax;
-extern crate debug;
 extern crate rustc;
+
+use IntType::*;
+use Arg::*;
 
 use std::string::{String};
 
@@ -18,7 +21,7 @@ use syntax::codemap::{Span, Pos};
 use syntax::ext::base::{DummyResult, ExtCtxt, MacResult, MacExpr};
 use syntax::fold::{Folder};
 use syntax::parse::{new_parser_from_tts};
-use syntax::parse::token::{EOF};
+use syntax::parse::token::{Eof};
 
 use util::{PeekN, Stream, LeftBrace, LeftBraceBrace, RightBrace, RightBraceBrace,
            Literal, Colon, Space, Token};
@@ -42,7 +45,7 @@ fn parse_macro(cx: &mut ExtCtxt, tts: &[TokenTree]) -> Option<(String, Span)> {
         },
         _ => None,
     };
-    if parser.token != EOF {
+    if parser.token != Eof {
         cx.span_err(parser.span, "unexpected token");
         return None;
     }
@@ -74,7 +77,7 @@ impl<'a, 'b> Parser<'a, 'b> {
         }
     }
 
-    fn err<T>(&mut self, i: uint, err: &str) -> Result<T,()> {
+    fn err<T>(&mut self, i: usize, err: &str) -> Result<T,()> {
         self.span.lo = Pos::from_uint(self.span.lo.to_uint() + i + 1);
         self.span.hi = self.span.lo;
         self.cx.span_err(self.span, err);
@@ -82,7 +85,7 @@ impl<'a, 'b> Parser<'a, 'b> {
     }
 
     fn tokenize(&mut self) -> Result<(), ()> {
-        let mut tokens: Vec<(uint, Token)>  = vec!();
+        let mut tokens: Vec<(usize, Token)>  = vec!();
         let mut chars = PeekN::new(self.bytes.chars());
         loop {
             let (mut i, b) = match chars.next() {
@@ -101,7 +104,7 @@ impl<'a, 'b> Parser<'a, 'b> {
             }
 
             match b as u32 {
-                0x20 .. 0x7E => { },
+                0x20 ... 0x7E => { },
                 _ => try!(self.err(i, "expected Ascii character")),
             }
 
@@ -216,6 +219,7 @@ impl<'a, 'b> Parser<'a, 'b> {
     }
 }
 
+#[derive(Copy)]
 enum IntType {
     I8,
     U8,
@@ -240,8 +244,8 @@ impl IntType {
             U32 => quote_expr!(cx, u32),
             I64 => quote_expr!(cx, i64),
             U64 => quote_expr!(cx, u64),
-            I   => quote_expr!(cx, int),
-            U   => quote_expr!(cx, uint),
+            I   => quote_expr!(cx, isize),
+            U   => quote_expr!(cx, usize),
         };
         quote_expr!(cx, |v| v as $ty)
     }
