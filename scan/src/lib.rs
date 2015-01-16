@@ -1,11 +1,12 @@
-#![feature(macro_rules)]
 #![crate_name = "scan"]
 #![crate_type = "lib"]
+#![allow(unstable)]
 
 extern crate libc;
 
 use stdin::{Stdin};
 use utf8::{UTF8};
+use std::num::{Int, Float};
 
 mod stdin;
 mod utf8;
@@ -38,9 +39,9 @@ macro_rules! get_or {
 macro_rules! digits {
     ($s:ident, [$($range:pat, $lo:block)|+], $base:expr, $invert:expr, $ty:ty) => {{
         let mut ok = false;
-        let mut res = 0u as $ty;
-        let base = $base as uint as $ty;
-        let mut iterations = 0u;
+        let mut res = 0us as $ty;
+        let base = $base as usize as $ty;
+        let mut iterations = 0us;
         loop {
             let next = get_or!($s, {break});
             match next {
@@ -60,7 +61,7 @@ macro_rules! digits {
             }
         }
         if $invert {
-            res /= std::num::pow(base, iterations);
+            res /= base.upow(iterations);
         }
         match ok {
             true => Some(res),
@@ -69,6 +70,7 @@ macro_rules! digits {
     }}
 }
 
+#[derive(Copy)]
 enum IntType {
     Binary,
     Octal,
@@ -79,64 +81,64 @@ enum IntType {
 impl Scanner {
     /// Parses binary digits
     pub fn binary(&mut self) -> Option<u64> {
-        digits!(self, [b'0'..b'1', {b'0'}], 2, false, u64)
+        digits!(self, [b'0'...b'1', {b'0'}], 2, false, u64)
     }
 
     /// Parses binary digits after the .
     pub fn binary_inv(&mut self) -> Option<f64> {
-        digits!(self, [b'0'..b'1', {b'0'}], 2, true, f64)
+        digits!(self, [b'0'...b'1', {b'0'}], 2, true, f64)
     }
 
     /// Parses octal digits
     pub fn octal(&mut self) -> Option<u64> {
-        digits!(self, [b'0'..b'7', {b'0'}], 8, false, u64)
+        digits!(self, [b'0'...b'7', {b'0'}], 8, false, u64)
     }
 
     /// Parses octal digits after the .
     pub fn octal_inv(&mut self) -> Option<f64> {
-        digits!(self, [b'0'..b'7', {b'0'}], 8, true, f64)
+        digits!(self, [b'0'...b'7', {b'0'}], 8, true, f64)
     }
 
     /// Parses decimal digits
     pub fn decimal(&mut self) -> Option<u64> {
-        digits!(self, [b'0'..b'9', {b'0'}], 10, false, u64)
+        digits!(self, [b'0'...b'9', {b'0'}], 10, false, u64)
     }
 
     /// Parses decimal digits after the .
     pub fn decimal_inv(&mut self) -> Option<f64> {
-        digits!(self, [b'0'..b'9', {b'0'}], 10, true, f64)
+        digits!(self, [b'0'...b'9', {b'0'}], 10, true, f64)
     }
 
     /// Parses hexadecimal digits
     pub fn hexadecimal(&mut self) -> Option<u64> {
-        digits!(self, [b'0'..b'9', {b'0'} |
-                       b'a'..b'f', {b'a' - 10} |
-                       b'A'..b'F', {b'A' - 10}],
+        digits!(self, [b'0'...b'9', {b'0'} |
+                       b'a'...b'f', {b'a' - 10} |
+                       b'A'...b'F', {b'A' - 10}],
                 16, false, u64)
     }
 
     /// Parses hexadecimal digits after the .
     pub fn hexadecimal_inv(&mut self) -> Option<f64> {
-        digits!(self, [b'0'..b'9', {0} | b'a'..b'f', {10} | b'A'..b'F', {10}], 16, true, f64)
+        digits!(self, [b'0'...b'9', {0} | b'a'...b'f', {10} | b'A'...b'F', {10}], 16, true, f64)
     }
 
     /// Parses digits depending on `ty`.
     fn digits(&mut self, ty: IntType) -> Option<u64> {
         match ty {
-            Binary  => self.binary(),
-            Octal   => self.octal(),
-            Decimal => self.decimal(),
-            Hex     => self.hexadecimal(),
+            IntType::Binary  => self.binary(),
+            IntType::Octal   => self.octal(),
+            IntType::Decimal => self.decimal(),
+            IntType::Hex     => self.hexadecimal(),
         }
     }
 
     /// Parses digits after the `.` depending on `ty`.
     fn digits_inv(&mut self, ty: IntType) -> Option<f64> {
         match ty {
-            Binary  => self.binary_inv(),
-            Octal   => self.octal_inv(),
-            Decimal => self.decimal_inv(),
-            Hex     => self.hexadecimal_inv(),
+            IntType::Binary  => self.binary_inv(),
+            IntType::Octal   => self.octal_inv(),
+            IntType::Decimal => self.decimal_inv(),
+            IntType::Hex     => self.hexadecimal_inv(),
         }
     }
 
@@ -151,21 +153,21 @@ impl Scanner {
     /// Returns the type of the following integer and, in the case of a decimal, if one
     /// `0` has already been consumed.
     fn classify(&mut self) -> (IntType, bool) {
-        match get_or!(self, {return (Decimal, false)}) {
+        match get_or!(self, {return (IntType::Decimal, false)}) {
             b'0' => {
-                match get_or!(self, {return (Decimal, true)}) {
-                    b'x' | b'X' => (Hex, false),
-                    b'o' | b'O' => (Octal, false),
-                    b'b' | b'B' => (Binary, false),
+                match get_or!(self, {return (IntType::Decimal, true)}) {
+                    b'x' | b'X' => (IntType::Hex, false),
+                    b'o' | b'O' => (IntType::Octal, false),
+                    b'b' | b'B' => (IntType::Binary, false),
                     b => {
                         self.stdin.push(b);
-                        (Decimal, true)
+                        (IntType::Decimal, true)
                     },
                 }
             },
             b => {
                 self.stdin.push(b);
-                (Decimal, false)
+                (IntType::Decimal, false)
             },
         }
     }
@@ -300,5 +302,27 @@ fn is_whitespace(b: u8) -> bool {
     // HT | LF | VT | FF | CR | SPACE
         9 | 10 | 11 | 12 | 13 | 32 => true,
         _ => false,
+    }
+}
+
+trait UniversalPow {
+    fn upow(self, n: usize) -> Self;
+}
+
+impl<T: Int> UniversalPow for T {
+    fn upow(self, n: usize) -> T {
+        self.pow(n)
+    }
+}
+
+impl UniversalPow for f32 {
+    fn upow(self, n: usize) -> f32 {
+        self.powi(n as i32)
+    }
+}
+
+impl UniversalPow for f64 {
+    fn upow(self, n: usize) -> f64 {
+        self.powi(n as i32)
     }
 }

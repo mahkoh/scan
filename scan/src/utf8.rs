@@ -1,6 +1,6 @@
 use std;
 
-pub static REPLACEMENT: char = '\ufffd';
+pub static REPLACEMENT: char = '\u{fffd}';
 
 pub struct UTF8 {
     cur: u32,
@@ -30,7 +30,7 @@ impl UTF8 {
                 None
             };
             self.rem = 0;
-            match std::str::utf8_char_width(b) {
+            match (b as char).len_utf8() {
                 0 => (old, Some(REPLACEMENT)),
                 n => {
                     self.rem = n as u32 - 1;
