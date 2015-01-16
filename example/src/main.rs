@@ -1,7 +1,8 @@
-#![feature(phase)]
+#![feature(plugin)]
+#![allow(unstable)]
 
 extern crate scan;
-#[phase(plugin)] extern crate scan_mac;
+#[plugin] #[no_link] extern crate scan_mac;
 
 fn print(s: &str) {
     let mut stdout = std::io::stdio::stdout();
