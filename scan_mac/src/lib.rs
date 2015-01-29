@@ -78,7 +78,7 @@ impl<'a, 'b> Parser<'a, 'b> {
     }
 
     fn err<T>(&mut self, i: usize, err: &str) -> Result<T,()> {
-        self.span.lo = Pos::from_uint(self.span.lo.to_uint() + i + 1);
+        self.span.lo = Pos::from_usize(self.span.lo.to_usize() + i + 1);
         self.span.hi = self.span.lo;
         self.cx.span_err(self.span, err);
         Err(())
@@ -175,7 +175,7 @@ impl<'a, 'b> Parser<'a, 'b> {
             match t {
                 Space           => self.args.push(Whitespace),
                 Literal(len)    => {
-                    push_lit!(self.bytes.slice(i, i+len));
+                    push_lit!(&self.bytes[i..i+len]);
                 },
                 LeftBraceBrace  => push_lit!("{"),
                 RightBraceBrace => push_lit!("}"),
@@ -188,7 +188,7 @@ impl<'a, 'b> Parser<'a, 'b> {
                         Some((j, _)) => try!(self.err(j, "Expected type")),
                         _ => try!(self.err(i, "Unexpected EOF")),
                     };
-                    let arg = match self.bytes.slice(j, j+len) {
+                    let arg = match &self.bytes[j..j+len] {
                         "i8"  => Int(I8),
                         "u8"  => Int(U8), 
                         "i16" => Int(I16), 
@@ -283,7 +283,7 @@ fn expand_scan_common<'a>(cx: &'a mut ExtCtxt, sp: Span, tts: &[TokenTree],
         None => return DummyResult::expr(sp),
     };
 
-    let args = match Parser::new(cx, lit.as_slice(), span).parse() {
+    let args = match Parser::new(cx, &lit[], span).parse() {
         Ok(args) => args,
         _ => return DummyResult::expr(sp),
     };
@@ -300,7 +300,7 @@ fn expand_scan_common<'a>(cx: &'a mut ExtCtxt, sp: Span, tts: &[TokenTree],
 
     for arg in args.into_iter() {
         let i = decls.len();
-        let ident = cx.ident_of(format!("a{}", i).as_slice());
+        let ident = cx.ident_of(&format!("a{}", i)[]);
         match arg {
             Int(..) | Float(..) | Strin => {
                 decls.push(quote_stmt!(cx,
@@ -316,7 +316,7 @@ fn expand_scan_common<'a>(cx: &'a mut ExtCtxt, sp: Span, tts: &[TokenTree],
         }
         match arg {
             Lit(ref v) => {
-                let ss = v.as_slice();
+                let ss = &v[];
                 retvs.push(quote_stmt!(cx,
                     if pb.literal($ss).is_none() {
                         break;
@@ -366,7 +366,6 @@ fn expand_scan_common<'a>(cx: &'a mut ExtCtxt, sp: Span, tts: &[TokenTree],
     retvs.push(quote_stmt!(cx, break;));
 
     let loop_block = P(Block {
-        view_items: vec!(),
         stmts: retvs,
         expr: None,
         id: ast::DUMMY_NODE_ID,
@@ -398,7 +397,6 @@ fn expand_scan_common<'a>(cx: &'a mut ExtCtxt, sp: Span, tts: &[TokenTree],
     statements.push(quote_stmt!(cx, $looop));
 
     let final_block = P(Block {
-        view_items: vec!(),
         stmts: statements,
         expr: Some(tupel),
         id: ast::DUMMY_NODE_ID,
@@ -419,7 +417,6 @@ fn expand_readln<'a>(cx: &'a mut ExtCtxt, sp: Span,
     );
 
     let final_block = P(Block {
-        view_items: vec!(),
         stmts: vec!(decl),
         expr: Some(res),
         id: ast::DUMMY_NODE_ID,
