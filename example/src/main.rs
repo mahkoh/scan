@@ -5,7 +5,7 @@ extern crate scan;
 #[plugin] #[no_link] extern crate scan_mac;
 
 fn print(s: &str) {
-    let mut stdout = std::io::stdio::stdout();
+    let mut stdout = std::old_io::stdio::stdout();
     stdout.write_str(s).ok();
 }
 
