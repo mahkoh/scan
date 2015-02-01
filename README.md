@@ -4,7 +4,7 @@ Macros for user input
 
 ## Example
 
-See the [this file](https://github.com/mahkoh/scan/tree/master/example/src).
+See [this file](https://github.com/mahkoh/scan/tree/master/example/src).
 
 ## Description
 
