@@ -4,7 +4,7 @@ Macros for user input
 
 ## Example
 
-See [this file](https://github.com/mahkoh/scan/tree/master/example/src).
+See the [this file](https://github.com/mahkoh/scan/tree/master/example/src).
 
 ## Description
 
@@ -117,10 +117,11 @@ You cannot use the `}}` specifier right after the end of a specifier of the form
 
 ### Importing the crates:
 ```rust
-#![feature(phase)]
+#![feature(plugin)]
+#![feature(io)]
 
 extern crate scan;
-#[phase(plugin)] extern crate scan_mac;
+#[plugin] #[no_link] extern crate scan_mac;
 ```
 
 ### Cargo
