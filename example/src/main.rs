@@ -1,5 +1,5 @@
 #![feature(plugin)]
-#![allow(unstable)]
+#![feature(io)]
 
 extern crate scan;
 #[plugin] #[no_link] extern crate scan_mac;
