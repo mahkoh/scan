@@ -4,27 +4,7 @@ Macros for user input
 
 ## Example
 
-```rust
-print("Please enter your name: ");
-
-let name: String = readln!();
-let year: u32;
-let place: String;
-loop {
-    print("Please enter your year and place of birth: ");
-    let (maybe_year, maybe_place) = scanln!(" {u32} {s} ");
-    match (maybe_year, maybe_place) {
-        (Some(y), Some(s)) => {
-            year = y;
-            place = s;
-            break;
-        },
-        _ => { }
-    }
-}
-
-println!("Thank you for your cooperation");
-```
+See the [this file](https://github.com/mahkoh/scan/tree/master/example/src).
 
 ## Description
 
